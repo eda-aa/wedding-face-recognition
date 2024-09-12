@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Face Recognition - Upload or Take a Selfie</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome! We hope you enjoyed the event! <br> We're delighted to hear you want to receive the pictures!</h1>
+    <p>Please choose how you'd like to provide your face:</p>
+
+    <!-- Options to upload or use camera -->
+    <button id="upload-option">Upload an Image</button>
+    <button id="camera-option">Take a Selfie</button>
+
+    <!-- Image upload form -->
+    <form id="upload-form" method="POST" enctype="multipart/form-data" action="/upload" style="display: none;">
+      <input type="file" id="file-input" name="file" accept="image/*">
+      <button type="submit">Upload Image</button>
+    </form>
+
+    <!-- Camera and capture button -->
+    <div id="camera-section" style="display: none;">
+      <video id="camera-feed" width="300" height="300" autoplay></video>
+      <button id="capture-button">Capture Image</button>
+    </div>
+
+    <!-- Hidden form for submitting the captured selfie -->
+    <form id="camera-form" method="POST" enctype="multipart/form-data" action="/upload-camera" style="display: none;">
+      <input type="hidden" name="capturedImage" id="capturedImage">
+      <button type="submit">Submit Selfie</button>
+    </form>
+
+    <!-- Script to manage the form and camera actions -->
+    <script>
+      const uploadOption = document.getElementById('upload-option');
+      const cameraOption = document.getElementById('camera-option');
+      const uploadForm = document.getElementById('upload-form');
+      const cameraSection = document.getElementById('camera-section');
+      const cameraFeed = document.getElementById('camera-feed');
+      const captureButton = document.getElementById('capture-button');
+      const cameraForm = document.getElementById('camera-form');
+      const capturedImageInput = document.getElementById('capturedImage');
+
+      // Show upload form or camera feed based on selection
+      uploadOption.addEventListener('click', () => {
+        uploadForm.style.display = 'block';
+        cameraSection.style.display = 'none';
+      });
+
+      cameraOption.addEventListener('click', async () => {
+        uploadForm.style.display = 'none';
+        cameraSection.style.display = 'block';
+        
+        // Request camera permission and start video feed
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          cameraFeed.srcObject = stream;
+        } catch (error) {
+          alert('Unable to access the camera. Please allow camera access.');
+        }
+      });
+
+      // Capture image from the video feed and submit it
+      captureButton.addEventListener('click', () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = cameraFeed.videoWidth;
+        canvas.height = cameraFeed.videoHeight;
+        canvas.getContext('2d').drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
+        
+        const capturedImage = canvas.toDataURL('image/png'); // Convert to base64
+        
+        // Set hidden input value to the captured image
+        capturedImageInput.value = capturedImage;
+        cameraForm.style.display = 'block'; // Show the submit button for the captured selfie
+      });
+    </script>
+  </div>
+</body>
+</html>
